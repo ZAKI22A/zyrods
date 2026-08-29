@@ -45,7 +45,7 @@ from urllib.parse import urljoin
 import yaml
 
 log = logging.getLogger(__name__)
-BOT_DISPLAY_NAME = "REM ALL IN ONE BOT"
+BOT_DISPLAY_NAME = "Zyro"
 
 SPOTIFY_TRACK_REGEX = r"https?://open\.spotify\.com/track/([a-zA-Z0-9]+)"
 SPOTIFY_PLAYLIST_REGEX = r"https?://open\.spotify\.com/playlist/([a-zA-Z0-9]+)"
@@ -525,7 +525,7 @@ class Music(commands.Cog):
                 try:
                     ended = inactivity_embed()
                     if self.client.user and self.client.user.avatar:
-                        ended.set_author(name="REM Music", icon_url=self.client.user.display_avatar.url)
+                        ended.set_author(name="Zyro Music", icon_url=self.client.user.display_avatar.url)
                     support = Button(label="Support", style=discord.ButtonStyle.link, url=serverLink)
                     view = View()
                     view.add_item(support)
@@ -603,7 +603,7 @@ class Music(commands.Cog):
                 await player.disconnect()
                 ended = queue_ended_embed()
                 if self.client.user and self.client.user.avatar:
-                    ended.set_author(name="REM Music", icon_url=self.client.user.display_avatar.url)
+                    ended.set_author(name="Zyro Music", icon_url=self.client.user.display_avatar.url)
                 support = Button(label="Support", style=discord.ButtonStyle.link, url=serverLink)
                 view = View()
                 view.add_item(support)

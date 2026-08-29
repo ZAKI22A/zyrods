@@ -265,70 +265,47 @@ class Extra(commands.Cog):
     if member == None or member == "":
       member = ctx.author
     elif member not in ctx.guild.members:
-      member = await self.bot.fetch_user(member.id)
+      try:
+        member = await self.bot.fetch_user(member.id)
+      except Exception:
+        member = ctx.author
 
-    badges = ""
-    if member.public_flags.hypesquad:
-      badges += "HypeSquad Events, "
-    if member.public_flags.hypesquad_balance:
-      badges += "HypeSquad Balance, "
-    if member.public_flags.hypesquad_bravery:
-      badges += "HypeSquad Bravery, "
-    if member.public_flags.hypesquad_brilliance:
-      badges += "HypeSquad Brilliance, "
-    if member.public_flags.early_supporter:
-      badges += "Early Supporter, "
-    if member.public_flags.active_developer:
-      badges += "Active Developer, "
-    if member.public_flags.verified_bot_developer:
-      badges += "Early Verified Bot Developer, "
-    if member.public_flags.discord_certified_moderator:
-      badges += "Moderators Program Alumni, "
-    if member.public_flags.staff:
-      badges += "Discord Staff, "
-    if member.public_flags.partner:
-      badges += "Partnered Server Owner "
-    if badges == None or badges == "":
-      badges += f"{cross}"
+    # Fetch banner (rectangular at bottom)
+    try:
+      bannerUser = await self.bot.fetch_user(member.id)
+      banner_url = bannerUser.banner.url if bannerUser.banner else None
+    except Exception:
+      banner_url = None
+      bannerUser = member
+    # Fallback to guild banner if no user banner
+    if not banner_url and ctx.guild.banner:
+      banner_url = ctx.guild.banner.url
 
-    if member in ctx.guild.members:
-      nickk = f"{member.nick if member.nick else 'None'}"
-      joinedat = f"<t:{round(member.joined_at.timestamp())}:R>"
-    else:
-      nickk = "None"
-      joinedat = "None"
+    # Badges
+    badges_list = []
+    flags = member.public_flags
+    if flags.hypesquad: badges_list.append("HypeSquad Events")
+    if flags.hypesquad_balance: badges_list.append("HypeSquad Balance")
+    if flags.hypesquad_bravery: badges_list.append("HypeSquad Bravery")
+    if flags.hypesquad_brilliance: badges_list.append("HypeSquad Brilliance")
+    if flags.early_supporter: badges_list.append("Early Supporter")
+    if flags.active_developer: badges_list.append("Active Developer")
+    if flags.verified_bot_developer: badges_list.append("Early Verified Bot Developer")
+    if flags.discord_certified_moderator: badges_list.append("Moderators Program Alumni")
+    if flags.staff: badges_list.append("Discord Staff")
+    if flags.partner: badges_list.append("Partnered Server Owner")
+    badges_val = ", ".join(badges_list) if badges_list else "None"
 
-    kp = ""
-    if member in ctx.guild.members:
-      if member.guild_permissions.kick_members:
-        kp += "Kick Members"
-      if member.guild_permissions.ban_members:
-        kp += " , Ban Members"
-      if member.guild_permissions.administrator:
-        kp += " , Administrator"
-      if member.guild_permissions.manage_channels:
-        kp += " , Manage Channels"
-        
-      if  member.guild_permissions.manage_guild:
-        kp += " , Manage Server"
-        
-      if member.guild_permissions.manage_messages:
-        kp += " , Manage Messages"
-      if member.guild_permissions.mention_everyone:
-        kp += " , Mention Everyone"
-      if member.guild_permissions.manage_nicknames:
-        kp += " , Manage Nicknames"
-      if member.guild_permissions.manage_roles:
-        kp += " , Manage Roles"
-      if member.guild_permissions.manage_webhooks:
-        kp += " , Manage Webhooks"
-      if member.guild_permissions.manage_emojis:
-        kp += " , Manage Emojis"
+    # Member specific
+    is_member = member in ctx.guild.members
+    nickk = f"{member.nick if is_member and member.nick else 'None'}"
+    joinedat = f"<t:{round(member.joined_at.timestamp())}:R>" if is_member and member.joined_at else "None"
+    top_role = member.top_role.mention if is_member and len(member.roles) > 1 else "None"
+    role_count = len(member.roles) - 1 if is_member else 0
+    voice = member.voice.channel.mention if is_member and member.voice and member.voice.channel else "None"
+    boosting = f"<t:{round(member.premium_since.timestamp())}:R>" if is_member and member in ctx.guild.premium_subscribers else "None"
 
-      if kp is None or kp == "":
-        kp = "None"
-
-    if member in ctx.guild.members:
+    if is_member:
       if member == ctx.guild.owner:
         aklm = "Server Owner"
       elif member.guild_permissions.administrator:
@@ -337,42 +314,59 @@ class Extra(commands.Cog):
         aklm = "Server Moderator"
       else:
         aklm = "Server Member"
-
-    bannerUser = await self.bot.fetch_user(member.id)
-    top_role = member.top_role.mention if member in ctx.guild.members and len(member.roles) > 1 else "None"
-    role_count = len(member.roles) - 1 if member in ctx.guild.members else 0
-    voice = "None" if member not in ctx.guild.members or not member.voice else member.voice.channel.mention
-    boosting = f"<t:{round(member.premium_since.timestamp())}:R>" if member in ctx.guild.premium_subscribers else "None"
-    embed = discord.Embed(
-      title=f"{member.name}",
-      description=(
-        f"**User:** {member.mention if hasattr(member, 'mention') else member}\n"
-        f"**ID:** `{member.id}`\n"
-        f"**Nickname:** `{nickk}`\n"
-        f"**Bot:** {'Yes' if member.bot else 'No'}\n"
-        f"**Created:** <t:{round(member.created_at.timestamp())}:R>\n"
-        f"**Joined:** {joinedat}\n"
-        f"**Top Role:** {top_role} (`{role_count}` roles)\n"
-        f"**Voice:** {voice}\n"
-        f"**Boosting:** {boosting}\n"
-        f"**Acknowledgement:** {aklm if member in ctx.guild.members else 'Not in server'}"
-      ),
-      color=self.color
-    )
-    embed.set_thumbnail(url=member.display_avatar.url)
-    if bannerUser.banner:
-      embed.set_image(url=bannerUser.banner)
-    if badges != f"{cross}":
-      embed.add_field(name="Badges", value=badges.rstrip(", "), inline=False)
-    if member in ctx.guild.members:
-      embed.add_field(name="Key Permissions", value=kp, inline=False)
-      embed.set_footer(text=f"Requested by {ctx.author}",
-                       icon_url=ctx.author.display_avatar.url)
     else:
-      if member not in ctx.guild.members:
-        embed.set_footer(text=f"{member.name} not in this server.",
-                         icon_url=ctx.author.display_avatar.url)
-    await ctx.send(view = embed_to_view(embed))
+      aklm = "Not in server"
+
+    kp = ""
+    if is_member:
+      perms_map = [
+        (member.guild_permissions.kick_members, "Kick Members"),
+        (member.guild_permissions.ban_members, "Ban Members"),
+        (member.guild_permissions.administrator, "Administrator"),
+        (member.guild_permissions.manage_channels, "Manage Channels"),
+        (member.guild_permissions.manage_guild, "Manage Server"),
+        (member.guild_permissions.manage_messages, "Manage Messages"),
+        (member.guild_permissions.mention_everyone, "Mention Everyone"),
+        (member.guild_permissions.manage_nicknames, "Manage Nicknames"),
+        (member.guild_permissions.manage_roles, "Manage Roles"),
+        (member.guild_permissions.manage_webhooks, "Manage Webhooks"),
+        (member.guild_permissions.manage_emojis, "Manage Emojis"),
+      ]
+      kp = ", ".join([name for val, name in perms_map if val]) or "None"
+
+    # Professional organized embed - same style as logs (author + thumbnail top-right + banner rectangular)
+    embed = discord.Embed(
+      title=f"{emojis.USER}  {member.name}",
+      description=f"{member.mention}  •  `{member.id}`",
+      color=self.color,
+      timestamp=discord.utils.utcnow()
+    )
+    if ctx.guild.icon:
+      embed.set_author(name=ctx.guild.name, icon_url=ctx.guild.icon.url)
+    else:
+      embed.set_author(name=ctx.guild.name)
+    embed.set_thumbnail(url=member.display_avatar.url)
+    if banner_url:
+      embed.set_image(url=banner_url)
+
+    # Organized fields (max 3 inline, then full width for permissions)
+    embed.add_field(name="User", value=f"{member.mention}", inline=True)
+    embed.add_field(name="ID", value=f"`{member.id}`", inline=True)
+    embed.add_field(name="Bot", value=f"`{'Yes' if member.bot else 'No'}`", inline=True)
+    embed.add_field(name="Nickname", value=f"`{nickk}`", inline=True)
+    embed.add_field(name="Created", value=f"<t:{round(member.created_at.timestamp())}:R>", inline=True)
+    embed.add_field(name="Joined", value=joinedat, inline=True)
+    embed.add_field(name="Top Role", value=f"{top_role}", inline=True)
+    embed.add_field(name="Roles", value=f"`{role_count}`", inline=True)
+    embed.add_field(name="Voice", value=voice, inline=True)
+    embed.add_field(name="Boosting", value=boosting, inline=True)
+    embed.add_field(name="Acknowledgement", value=f"`{aklm}`", inline=True)
+    embed.add_field(name="Badges", value=badges_val, inline=False)
+    if is_member:
+      embed.add_field(name=f"{emojis.GEAR}  Key Permissions", value=kp, inline=False)
+
+    embed.set_footer(text=f"Requested by {ctx.author}  •  {ctx.guild.name}", icon_url=ctx.author.display_avatar.url if ctx.author.display_avatar else None)
+    await ctx.send(embed=embed)
 
 
 

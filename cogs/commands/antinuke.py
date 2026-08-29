@@ -108,16 +108,16 @@ class Antinuke(commands.Cog):
           return
 
         await asyncio.sleep(1)
-        setup_embed.description += f"\n{emojis.TICK}| Checking REM ALL IN ONE BOT's role position for optimal configuration..."
+        setup_embed.description += f"\n{emojis.TICK}| Checking Zyro's role position for optimal configuration..."
         await setup_message.edit(view = embed_to_view(setup_embed))
 
         await asyncio.sleep(1)
-        setup_embed.description += f"\n{emojis.TICK} | Crafting and configuring the REM Supreme role..."
+        setup_embed.description += f"\n{emojis.TICK} | Crafting and configuring the Zyro Supreme role..."
         await setup_message.edit(view = embed_to_view(setup_embed))
         
         try:
           role = await ctx.guild.create_role(
-            name="REM Supreme",
+            name="Zyro Supreme",
             color=0x0ba7ff,
             permissions=discord.Permissions(administrator=True),
             hoist=False,
@@ -135,7 +135,7 @@ class Antinuke(commands.Cog):
           return
 
         await asyncio.sleep(1)
-        setup_embed.description += f"\n{emojis.TICK}| Ensuring precise placement of the REM Supreme role..."
+        setup_embed.description += f"\n{emojis.TICK}| Ensuring precise placement of the Zyro Supreme role..."
         await setup_message.edit(view = embed_to_view(setup_embed))
         try:
           await ctx.guild.edit_role_positions(positions={role: 1})
@@ -170,9 +170,9 @@ class Antinuke(commands.Cog):
 
         embed.add_field(name="Additional Modules", value=f"{emojis.ENABLED_160063} **Anti Prune**\n{emojis.ENABLED_160063} **Auto Recovery**")
 
-        embed.set_author(name="REM ALL IN ONE BOT Antinuke", icon_url=self.bot.user.display_avatar.url)
+        embed.set_author(name="Zyro Antinuke", icon_url=self.bot.user.display_avatar.url)
 
-        embed.set_footer(text="Successfully Enabled Antinuke for this server | Powered by REM ALL IN ONE BOT", icon_url=self.bot.user.display_avatar.url)
+        embed.set_footer(text="Successfully Enabled Antinuke for this server | Powered by Zyro", icon_url=self.bot.user.display_avatar.url)
         embed.set_thumbnail(url=self.bot.user.display_avatar.url)
 
         view = discord.ui.View()
@@ -237,6 +237,6 @@ class Antinuke(commands.Cog):
 """
 @Author: Sonu Jana
     + Discord: me.sonu
-    + Community: https://discord.gg/stVsvE9rhT (REM ALL IN ONE BOT)
+    + Community: https://discord.gg/stVsvE9rhT (Zyro)
     + for any queries reach out Community or DM me.
 """

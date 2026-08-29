@@ -73,13 +73,24 @@ class ReasonModal(ui.Modal):
 
     async def on_submit(self, interaction: discord.Interaction):
         reason = self.reason_input.value or "No reason provided"
+        _dm_ok = False
         try:
-            await self.user.send(f"{emojis.ICONS_WARNING} You have been Banned from **{self.author.guild.name}** by **{self.author}**. Reason: {reason or 'No reason provided'}")
-            dm_status = "Yes"
-        except discord.Forbidden:
-            dm_status = "No"
-        except discord.HTTPException:
-            dm_status = "No"
+            from utils.admin_dm import send_admin_dm
+            from utils import emojis as _emo
+            _dm_ok = await send_admin_dm(
+                self.user,
+                title="Server Ban",
+                emoji=str(_emo.EMOJI_7CLUB_BAN),
+                description=f"You have been **banned** from **{self.author.guild.name}**.",
+                color=0xED4245,
+                fields=[
+                    ("Server", self.author.guild.name, True),
+                    ("Reason", f"`{reason}`", False),
+                ],
+            )
+        except Exception:
+            _dm_ok = False
+        dm_status = "Yes" if _dm_ok else "No"
 
         embed = discord.Embed(description=f"** Target User:** [{self.user}](https://discord.com/users/{self.user.id})\n **User Mention:** {self.user.mention}\n** DM Sent:** {dm_status}\n** Reason:** {reason}", color=0x000000)
         embed.set_author(name=f"Successfully Banned {self.user.name}", icon_url=self.user.avatar.url if self.user.avatar else self.user.default_avatar.url)
@@ -141,13 +152,25 @@ class Unban(commands.Cog):
             view.message = message 
             return
 
+        _dm_ok = False
         try:
-            await user.send(f"{emojis.TICK} You have been unbanned from **{ctx.guild.name}** by **{ctx.author}**. Reason: {reason or 'No reason provided'}")
-            dm_status = "Yes"
-        except discord.Forbidden:
-            dm_status = "No"
-        except discord.HTTPException:
-            dm_status = "No"
+            from utils.admin_dm import send_admin_dm
+            from utils import emojis as _emo
+            _reason = reason or 'No reason provided'
+            _dm_ok = await send_admin_dm(
+                user,
+                title="Server Unban",
+                emoji=str(_emo.TICK),
+                description=f"You have been **unbanned** from **{ctx.guild.name}**.",
+                color=0x57F287,
+                fields=[
+                    ("Server", ctx.guild.name, True),
+                    ("Reason", f"`{_reason}`", False),
+                ],
+            )
+        except Exception:
+            _dm_ok = False
+        dm_status = "Yes" if _dm_ok else "No"
 
         await ctx.guild.unban(user, reason=f"Unban requested by {ctx.author} for reason: {reason or 'No reason provided'}")
 
@@ -166,6 +189,6 @@ class Unban(commands.Cog):
 """
 @Author: Sonu Jana
     + Discord: me.sonu
-    + Community: https://discord.gg/stVsvE9rhT (REM ALL IN ONE BOT)
+    + Community: https://discord.gg/stVsvE9rhT (Zyro)
     + for any queries reach out Community or DM me.
 """

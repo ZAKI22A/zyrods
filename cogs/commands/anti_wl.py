@@ -170,7 +170,7 @@ class Whitelist(commands.Cog):
         embed.add_field(name="**Executor**", value=f"<@!{ctx.author.id}>", inline=True)
         embed.add_field(name="**Target**", value=f"<@!{member.id}>", inline=True)
         embed.set_thumbnail(url=self.bot.user.display_avatar.url)
-        embed.set_footer(text=f"Developed by REM ALL IN ONE BOT")
+        embed.set_footer(text=f"Developed by Zyro")
 
         msg = await ctx.send(view = embed_to_view(embed, view = view))
 
@@ -211,7 +211,7 @@ class Whitelist(commands.Cog):
                 embed.add_field(name="**Executor**", value=f"<@!{ctx.author.id}>", inline=True)
                 embed.add_field(name="**Target**", value=f"<@!{member.id}>", inline=True)
                 embed.set_thumbnail(url=self.bot.user.display_avatar.url)
-                embed.set_footer(text=f"Developed by REM ALL IN ONE BOT")
+                embed.set_footer(text=f"Developed by Zyro")
 
                 await interaction.response.edit_message(view = embed_to_view(embed, view = None))
             else:
@@ -260,7 +260,7 @@ class Whitelist(commands.Cog):
                 embed.add_field(name="**Executor**", value=f"<@!{ctx.author.id}>", inline=True)
                 embed.add_field(name="**Target**", value=f"<@!{member.id}>", inline=True)
                 embed.set_thumbnail(url=self.bot.user.display_avatar.url)
-                embed.set_footer(text=f"Developed by REM ALL IN ONE BOT")
+                embed.set_footer(text=f"Developed by Zyro")
 
                 await interaction.response.edit_message(view = embed_to_view(embed, view = None))
         except TimeoutError:
@@ -415,6 +415,6 @@ class Whitelist(commands.Cog):
 """
 @Author: Sonu Jana
     + Discord: me.sonu
-    + Community: https://discord.gg/stVsvE9rhT (REM ALL IN ONE BOT)
+    + Community: https://discord.gg/stVsvE9rhT (Zyro)
     + for any queries reach out Community or DM me.
 """

@@ -44,7 +44,7 @@ _KAOMOJI = (
 )
 
 _READY_LINES = (
-    "REM is online — go say hi!",
+    "Zyro is online — go say hi!",
     "All systems cute and operational ✧",
     "Ready to serve your guilds, senpai~",
     "Boot complete. Time to be awesome.",
@@ -61,7 +61,7 @@ _QUIET_LOGGERS = (
 
 
 class RemConsoleFormatter(logging.Formatter):
-    """Cute anime-styled console formatter for REM."""
+    """Cute anime-styled console formatter for Zyro."""
 
     LEVEL_STYLES = {
         logging.DEBUG: ("✧ DBG ", "muted"),
@@ -139,7 +139,7 @@ def setup_console_logging(level: str = "INFO", *, log_to_file: bool = True) -> N
         logging.getLogger(name).setLevel(logging.WARNING)
 
 
-def print_banner(bot_name: str = "REM ALL IN ONE BOT") -> None:
+def print_banner(bot_name: str = "Zyro") -> None:
     art = r"""
     ♡ ╭──────────────────────────────────────────────╮ ♡
       │                                              │
@@ -236,7 +236,7 @@ def shard_connected(shard_id: int) -> None:
 def goodbye() -> None:
     kaomoji = random.choice(("(｡•́︿•̀｡)", "(╯︵╰,)", "♡ see you soon~"))
     print(
-        f"\n{_PALETTE['pink']}  ♡ REM is shutting down... {kaomoji}{_RESET}\n",
+        f"\n{_PALETTE['pink']}  ♡ Zyro is shutting down... {kaomoji}{_RESET}\n",
         flush=True,
     )
 

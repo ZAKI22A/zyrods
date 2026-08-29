@@ -181,7 +181,7 @@ class Owner(commands.Cog):
                 member = await self.client.fetch_user(staff_id)
                 member_list.append(f"{member.name}#{member.discriminator} (ID: {staff_id})")
             staff_display = "\n".join(member_list)
-            sonu = discord.Embed(title=f"{emojis.TICK} REM ALL IN ONE BOT Staff", description=f"\n{staff_display}", color=0x000000)
+            sonu = discord.Embed(title=f"{emojis.TICK} Zyro Staff", description=f"\n{staff_display}", color=0x000000)
             await ctx.send(view = embed_to_view(sonu))
 
     @commands.command(name="slist")
@@ -195,7 +195,7 @@ class Owner(commands.Cog):
         paginator = Paginator(source=DescriptionEmbedPaginator(
             entries=entries,
             description="",
-            title=f"Guild List of REM ALL IN ONE BOT [{len(self.client.guilds)}]",
+            title=f"Guild List of Zyro [{len(self.client.guilds)}]",
             color=0x000000,
             per_page=10),
             ctx=ctx)
@@ -258,7 +258,7 @@ class Owner(commands.Cog):
     @commands.command(name="Q.reload", help="Restarts the client.")
     @commands.is_owner()
     async def _restart(self, ctx: Context):
-        await ctx.reply("Restarting REM ALL IN ONE BOT...")
+        await ctx.reply("Restarting Zyro...")
         restart_program()
 
     @commands.command(name="sync", help="Syncs all database.")
@@ -296,7 +296,7 @@ class Owner(commands.Cog):
         ]
         paginator = Paginator(source=DescriptionEmbedPaginator(
             entries=entries,
-            title=f"REM ALL IN ONE BOT Owners [{len(nplist)}]",
+            title=f"Zyro Owners [{len(nplist)}]",
             description="",
             per_page=10,
             color=0x000000),

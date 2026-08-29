@@ -106,7 +106,7 @@ class Stats(commands.Cog):
     @ignore_check()
     @commands.cooldown(1, 7, commands.BucketType.user)
     async def stats(self, ctx: commands.Context):
-        processing_message = await ctx.send(f"{emojis.LOADING} Loading REM ALL IN ONE BOT information...")
+        processing_message = await ctx.send(f"{emojis.LOADING} Loading Zyro information...")
 
         guild_count = len(self.bot.guilds)
         user_count = sum(g.member_count for g in self.bot.guilds if g.member_count is not None)
@@ -147,7 +147,7 @@ class Stats(commands.Cog):
             pass
 
         embed = Embed(
-            title="REM ALL IN ONE BOT",
+            title="Zyro",
             description=(
                 f"**Servers:** `{guild_count}`\n"
                 f"**Users:** `{total_users}` total, `{human_count}` humans, `{bot_count}` bots\n"
@@ -168,7 +168,7 @@ class Stats(commands.Cog):
             inline=False,
         )
         if self.bot.user:
-            embed.set_footer(text="Powered by REM ALL IN ONE BOT", icon_url=self.bot.user.display_avatar.url)
+            embed.set_footer(text="Powered by Zyro", icon_url=self.bot.user.display_avatar.url)
 
         await ctx.reply(view=embed_to_view(embed), mention_author=False)
         await processing_message.delete()

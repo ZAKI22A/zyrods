@@ -1,4 +1,4 @@
-"""Kawaii CV2 card builders for REM music commands."""
+"""Kawaii CV2 card builders for Zyro music commands."""
 from __future__ import annotations
 
 from typing import Any, Optional, Sequence
@@ -8,7 +8,7 @@ import discord
 from utils.components_v2 import container, layout_view, separator, text
 from utils.cv2_compat import panel_with_actions
 
-FOOTER_BRAND = "REM ALL IN ONE BOT"
+FOOTER_BRAND = "Zyro"
 
 _HEADERS = {
     "now_playing": "♡ ⋆｡˚ **Now Playing** ˚｡⋆ ♡",
@@ -283,7 +283,7 @@ def queue_ended_embed() -> discord.Embed:
         title=_HEADERS["queue_ended"],
         description=(
             "All the songs finished playing~ I'm heading out of voice now.\n\n"
-            "♡ thanks for vibing with REM!"
+            "♡ thanks for vibing with Zyro!"
         ),
         color=0xFFB7C5,
     )

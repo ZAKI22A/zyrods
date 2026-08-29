@@ -357,7 +357,7 @@ class Fun(commands.Cog):
           )
 
           embed.set_footer(
-            text=f'Made by REM ALL IN ONE BOT',
+            text=f'Made by Zyro',
             icon_url=self.bot.user.avatar
           )
 

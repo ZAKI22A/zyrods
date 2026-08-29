@@ -3,17 +3,21 @@ from utils import emojis
 import discord
 from discord.ext import commands
 from discord import ui
-from datetime import timedelta
-import re
+import asyncio
 from utils.Tools import *
-from utils.cv2_compat import embed_to_view, embeds_to_view, sync_panel_message
+from utils.cv2_compat import embed_to_view, sync_panel_message
 
-class TimeoutView(ui.View):
-    def __init__(self, user, author):
+DEFAULT_MUTE_DURATION = 300  # 5 minutes
+DEFAULT_MUTE_TEXT = "5 minutes"
+MUTED_ROLE_NAME = "Zyro Muted"
+
+class ServerMuteView(ui.View):
+    def __init__(self, user, author, role):
         super().__init__(timeout=120)
         self.user = user
         self.author = author
-        self.message = None  
+        self.role = role
+        self.message = None
         self.color = discord.Color.from_rgb(0, 0, 0)
 
     async def interaction_check(self, interaction: discord.Interaction) -> bool:
@@ -30,70 +34,39 @@ class TimeoutView(ui.View):
 
     @ui.button(label="Unmute", style=discord.ButtonStyle.success)
     async def unmute(self, interaction: discord.Interaction, button: discord.ui.Button):
-        modal = ReasonModal(user=self.user, author=self.author, view=self)
-        await interaction.response.send_modal(modal)
-
-    @ui.button(style=discord.ButtonStyle.gray, emoji=f"{emojis.DELETE}")
-    async def delete(self, interaction: discord.Interaction, button: discord.ui.Button):
-        await interaction.message.delete()
-
-class AlreadyTimedoutView(ui.View):
-    def __init__(self, user, author):
-        super().__init__(timeout=60)
-        self.user = user
-        self.author = author
-        self.message = None  
-
-    async def interaction_check(self, interaction: discord.Interaction) -> bool:
-        if interaction.user != self.author:
-            await interaction.response.send_message("You are not allowed to interact with this!", ephemeral=True)
-            return False
-        return True
-
-    async def on_timeout(self):
+        guild = interaction.guild
+        member = guild.get_member(self.user.id)
+        if not member:
+            await interaction.response.send_message("Member not found.", ephemeral=True)
+            return
+        role = discord.utils.get(guild.roles, name=MUTED_ROLE_NAME)
+        if role not in member.roles and (not member.voice or not member.voice.mute):
+            await interaction.response.send_message(f"{member.mention} is not muted.", ephemeral=True)
+            return
+        try:
+            if role and role in member.roles:
+                await member.remove_roles(role, reason=f"Unmuted by {interaction.user}")
+            if member.voice and member.voice.mute:
+                await member.edit(mute=False, reason=f"Unmuted by {interaction.user}")
+        except discord.Forbidden:
+            await interaction.response.send_message("I lack permission to unmute.", ephemeral=True)
+            return
+        embed = discord.Embed(description=f"**Target:** {member.mention} (`{member.id}`)\n**Moderator:** {interaction.user.mention}", color=0x000000)
+        embed.set_author(name=f"Successfully Unmuted {member.name}", icon_url=member.display_avatar.url if member.display_avatar else member.default_avatar.url)
+        embed.set_thumbnail(url=member.display_avatar.url)
+        embed.set_footer(text=f"Requested by {interaction.user}", icon_url=interaction.user.display_avatar.url if interaction.user.display_avatar else interaction.user.default_avatar.url)
+        embed.timestamp = discord.utils.utcnow()
+        await interaction.response.edit_message(view=embed_to_view(embed, view=self))
         for item in self.children:
             item.disabled = True
-        await sync_panel_message(self)
-
-    @ui.button(label="Unmute", style=discord.ButtonStyle.success)
-    async def unmute(self, interaction: discord.Interaction, button: discord.ui.Button):
-        modal = ReasonModal(user=self.user, author=self.author, view=self)
-        await interaction.response.send_modal(modal)
+        try:
+            await self.message.edit(view=self)
+        except Exception:
+            pass
 
     @ui.button(style=discord.ButtonStyle.gray, emoji=f"{emojis.DELETE}")
     async def delete(self, interaction: discord.Interaction, button: discord.ui.Button):
         await interaction.message.delete()
-
-class ReasonModal(ui.Modal):
-    def __init__(self, user, author, view):
-        super().__init__(title="Unmute Reason")
-        self.user = user
-        self.author = author
-        self.view = view
-        self.reason_input = ui.TextInput(label="Reason for Unmuting", placeholder="Provide a reason to unmute or leave it blank.", required = False, max_length=2000, style=discord.TextStyle.paragraph)
-        self.add_item(self.reason_input)
-
-    async def on_submit(self, interaction: discord.Interaction):
-        reason = self.reason_input.value or "No reason provided"
-        try:
-            await self.user.send(f"You have been Unmuted in **{self.author.guild.name}** by **{self.author}**. Reason: {reason or 'No reason provided'}")
-            dm_status = "Yes"
-        except discord.Forbidden:
-            dm_status = "No"
-        except discord.HTTPException:
-            dm_status = "No"
-
-        embed = discord.Embed(description=f"** Target User:** [{self.user}](https://discord.com/users/{self.user.id})\n **User Mention:** {self.user.mention}\n** DM Sent:** {dm_status}\n**Reason:** {reason}", color=0x000000)
-        embed.set_author(name=f"Successfully Unmuted {self.user.name}", icon_url=self.user.avatar.url if self.user.avatar else self.user.default_avatar.url)
-        embed.add_field(name=" Moderator:", value=interaction.user.mention, inline=False)
-        embed.set_footer(text=f"Requested by {self.author}", icon_url=self.author.avatar.url if self.author.avatar else self.author.default_avatar.url)
-        embed.timestamp = discord.utils.utcnow()
-
-        await self.user.edit(timed_out_until=None, reason=f"Unmute requested by {self.author}")
-        await interaction.response.edit_message(view = embed_to_view(embed, view = self.view))
-        for item in self.view.children:
-            item.disabled = True
-        await interaction.message.edit(view=self.view)
 
 class Mute(commands.Cog):
     def __init__(self, bot):
@@ -101,116 +74,205 @@ class Mute(commands.Cog):
         self.color = discord.Color.from_rgb(0, 0, 0)
 
     def get_user_avatar(self, user):
-        return user.avatar.url if user.avatar else user.default_avatar.url
+        return user.display_avatar.url if user.display_avatar else user.default_avatar.url
 
-    def parse_time(self, time_str):
-        time_pattern = r"(\d+)([mhd])"
-        match = re.match(time_pattern, time_str)
-        if match:
-            time_value = int(match.group(1))
-            time_unit = match.group(2)
-            if time_unit == 'm' and 0 < time_value <= 60:
-                return timedelta(minutes=time_value), f"{time_value} minutes"
-            elif time_unit == 'h' and 0 < time_value <= 24:
-                return timedelta(hours=time_value), f"{time_value} hours"
-            elif time_unit == 'd' and 0 < time_value <= 28:
-                return timedelta(days=time_value), f"{time_value} days"
-        return None, None
+    async def get_or_create_muted_role(self, guild: discord.Guild) -> discord.Role:
+        role = discord.utils.get(guild.roles, name=MUTED_ROLE_NAME)
+        if role:
+            return role
+        # Create Zyro Muted role - professional
+        try:
+            role = await guild.create_role(
+                name=MUTED_ROLE_NAME,
+                color=discord.Color.from_rgb(99, 102, 107),
+                reason="Zyro mute system - auto created",
+                permissions=discord.Permissions.none()
+            )
+            # Place role just below bot's top role
+            try:
+                await guild.edit_role_positions(positions={role: guild.me.top_role.position - 1})
+            except Exception:
+                pass
+            # Voice: deny speak (mic) only - member can still join voice channels
+            # (do NOT set connect=False, and NO timeout is applied)
+            for channel in guild.channels:
+                try:
+                    if isinstance(channel, (discord.VoiceChannel, discord.StageChannel)):
+                        await channel.set_permissions(role, speak=False)
+                    elif isinstance(channel, discord.TextChannel):
+                        await channel.set_permissions(role, send_messages=False, add_reactions=False)
+                except discord.Forbidden:
+                    continue
+                except Exception:
+                    continue
+                await asyncio.sleep(0.02)
+        except discord.Forbidden:
+            raise
+        return role
 
-    @commands.hybrid_command(
+    async def _send_mute_log(self, guild, member, moderator, reason, duration_text):
+        try:
+            cog = self.bot.get_cog("Logging")
+            if cog:
+                banner = guild.banner.url if guild.banner else None
+                from cogs.commands.logging import build_pro_embed
+                embed = build_pro_embed(
+                    guild=guild, user=member,
+                    title="Member Muted", emoji=str(emojis.WARNINGICON),
+                    description=f"{member.mention} was muted and given `{MUTED_ROLE_NAME}`",
+                    color=0xED4245,
+                    fields=[
+                        ("Member", f"{member.mention} `({member.id})`", True),
+                        ("Moderator", f"{moderator.mention}", True),
+                        ("Duration", f"`{duration_text}`", True),
+                        ("Reason", f"`{reason or 'No reason'}`", False),
+                        ("Role", f"`{MUTED_ROLE_NAME}`", True),
+                    ],
+                    banner_url=banner,
+                    thumbnail_url=member.display_avatar.url
+                )
+                await cog.send_log(guild, "mute", embed)
+        except Exception:
+            pass
+
+    async def _auto_unmute_role(self, guild_id: int, member_id: int, duration: int):
+        await asyncio.sleep(duration)
+        try:
+            guild = self.bot.get_guild(guild_id)
+            if not guild:
+                return
+            member = guild.get_member(member_id)
+            if not member:
+                return
+            role = discord.utils.get(guild.roles, name=MUTED_ROLE_NAME)
+            if role and role in member.roles:
+                await member.remove_roles(role, reason="Auto unmute - mute duration expired")
+            if member.voice and member.voice.mute:
+                await member.edit(mute=False, reason="Auto unmute - mute duration expired")
+        except Exception:
+            pass
+
+    @commands.command(
         name="mute",
-        help="Mutes a user with optional time and reason",
-        usage="mute <member> [time] [reason]",
-        aliases=["timeout", "stfu"])
+        help="Mute a member with Zyro Muted role (5m auto)",
+        usage="mute <member> [reason]",
+        aliases=["servermute", "vmute", "timeout", "stfu"])
     @blacklist_check()
     @ignore_check()
     @commands.cooldown(1, 10, commands.BucketType.member)
     @commands.max_concurrency(1, per=commands.BucketType.default, wait=False)
     @commands.guild_only()
-    @commands.has_permissions(moderate_members=True)
-    @bot_has_permissions(moderate_members=True)
-    async def mute(self, ctx, user: discord.Member, time: str = None, *, reason=None):
+    @commands.has_permissions(manage_roles=True)
+    @bot_has_permissions(manage_roles=True, mute_members=True)
+    async def mute(self, ctx, member: discord.Member, *, reason: str = None):
+        # Basic checks
+        if member.bot:
+            embed = discord.Embed(description=f"{emojis.CROSSICON} You cannot mute a bot.", color=self.color)
+            return await ctx.send(view=embed_to_view(embed))
+        if member == ctx.guild.owner:
+            error = discord.Embed(color=self.color, description=f"{emojis.CROSSICON} You can't mute the Server Owner!")
+            error.set_author(name="Error")
+            return await ctx.send(view=embed_to_view(error))
+        if ctx.author != ctx.guild.owner and member.top_role >= ctx.author.top_role:
+            error = discord.Embed(color=self.color, description=f"{emojis.CROSSICON} You can't mute users having higher or equal role than yours!")
+            error.set_author(name="Error")
+            return await ctx.send(view=embed_to_view(error))
+        if member.top_role >= ctx.guild.me.top_role:
+            error = discord.Embed(color=self.color, description=f"{emojis.CROSSICON} I can't mute users having higher or equal role than mine. Move my role higher.")
+            error.set_author(name="Error")
+            return await ctx.send(view=embed_to_view(error))
 
-        if user.is_timed_out():
-            embed = discord.Embed(description="**Requested User is already muted in this server.**", color=self.color)
-            embed.add_field(name="__Unmute__:", value="Click on the `Unmute` button to remove the timeout from the user.")
-            embed.set_author(name=f"{user.name} is Already Timed Out!", icon_url=self.get_user_avatar(user))
-            embed.set_footer(text=f"Requested by {ctx.author}", icon_url=self.get_user_avatar(ctx.author))
-            view = AlreadyTimedoutView(user=user, author=ctx.author)
-            message = await ctx.send(view = embed_to_view(embed, view = view))
-            view.message = message
-            return
+        # Get or create muted role
+        try:
+            muted_role = await self.get_or_create_muted_role(ctx.guild)
+        except discord.Forbidden:
+            embed = discord.Embed(description=f"{emojis.CROSSICON} I need `Manage Roles` permission to create `{MUTED_ROLE_NAME}`.", color=self.color)
+            return await ctx.send(view=embed_to_view(embed))
 
-        if user == ctx.guild.owner:
-            error = discord.Embed(color=self.color, description="You can't timeout the Server Owner!")
-            error.set_author(name="Error Timing Out User")
-            error.set_footer(text=f"Requested by {ctx.author}", icon_url=self.get_user_avatar(ctx.author))
-            return await ctx.send(view = embed_to_view(error))
+        if muted_role in member.roles:
+            embed = discord.Embed(description=f"{emojis.ICONS_WARNING} **{member.name}** is already muted (`{MUTED_ROLE_NAME}`).", color=self.color)
+            embed.set_author(name="Already Muted", icon_url=self.get_user_avatar(member))
+            return await ctx.send(view=embed_to_view(embed))
 
-        if ctx.author != ctx.guild.owner and user.top_role >= ctx.author.top_role:
-            error = discord.Embed(color=self.color, description="You can't timeout users having higher or equal role than yours!")
-            error.set_author(name="Error Timing Out User")
-            error.set_footer(text=f"Requested by {ctx.author}", icon_url=self.get_user_avatar(ctx.author))
-            return await ctx.send(view = embed_to_view(error))
+        reason = reason or "No reason provided"
+        duration_text = DEFAULT_MUTE_TEXT
+        duration_seconds = DEFAULT_MUTE_DURATION
 
-        if user.top_role >= ctx.guild.me.top_role:
-            error = discord.Embed(color=self.color, description="I can't timeout users having higher or equal role than mine.")
-            error.set_author(name="Error Timing Out User")
-            error.set_footer(text=f"Requested by {ctx.author}", icon_url=self.get_user_avatar(ctx.author))
-            return await ctx.send(view = embed_to_view(error))
-
-        time_delta, duration_text = self.parse_time(time) if time else (timedelta(hours=24), "24 hours")
-
-        if not time_delta:
-            error = discord.Embed(color=self.color, description="Invalid time format! Use `<number><m/h/d>` where `m` is minutes (max 60), `h` is hours (max 24), and `d` is days (max 28).")
-            error.set_author(name="Error Timing Out User")
-            error.set_footer(text=f"Requested by {ctx.author}", icon_url=self.get_user_avatar(ctx.author))
-            return await ctx.send(view = embed_to_view(error))
+        # Apply role + voice mute if in voice
+        try:
+            await member.add_roles(muted_role, reason=f"Muted by {ctx.author} | {reason}")
+            if member.voice and member.voice.channel:
+                try:
+                    await member.edit(mute=True, reason=f"Muted by {ctx.author}")
+                except Exception:
+                    pass
+        except discord.Forbidden:
+            embed = discord.Embed(description=f"{emojis.CROSSICON} I lack permission to give {muted_role.mention} to {member.mention}.", color=self.color)
+            return await ctx.send(view=embed_to_view(embed))
 
         try:
-            await user.send(f"{emojis.ICONS_WARNING} You have been muted in **{ctx.guild.name}** by **{ctx.author}** for {duration_text}. Reason: {reason or 'None'}")
-            dm_status = "Yes"
-        except discord.Forbidden:
+            from utils.admin_dm import send_admin_dm
+            from utils import emojis as _emo
+            dm_ok = await send_admin_dm(
+                member,
+                title="Server Muted",
+                emoji=str(_emo.WARNINGICON),
+                description=f"You have been **muted** in **{ctx.guild.name}**.",
+                color=0xED4245,
+                fields=[
+                    ("Server", ctx.guild.name, True),
+                    ("Duration", f"`{duration_text}`", True),
+                    ("Reason", f"`{reason}`", False),
+                ],
+            )
+            dm_status = "Yes" if dm_ok else "No"
+        except Exception:
             dm_status = "No"
-        except discord.HTTPException:
-            dm_status = "No"
 
-        await user.edit(timed_out_until=discord.utils.utcnow() + time_delta, reason=f"Muted by {ctx.author} for {duration_text}. Reason: {reason or 'None'}")
+        # Professional, consistent confirmation embed (avatar thumbnail + server banner)
+        from cogs.commands.logging import build_pro_embed
+        _banner = ctx.guild.banner.url if ctx.guild.banner else None
+        embed = build_pro_embed(
+            guild=ctx.guild, user=member,
+            title="Successfully Muted", emoji=str(emojis.WARNINGICON),
+            description=f"{member.mention} was muted with `{MUTED_ROLE_NAME}` — voice mic muted, auto-unmute after `{duration_text}`.",
+            color=0xED4245,
+            fields=[
+                ("Target", f"{member.mention} `({member.id})`", True),
+                ("Role", muted_role.mention, True),
+                ("Duration", f"`{duration_text}`", True),
+                ("DM Sent", f"`{dm_status}`", True),
+                ("Reason", f"`{reason}`", False),
+            ],
+            banner_url=_banner,
+            thumbnail_url=member.display_avatar.url if member.display_avatar else None,
+        )
 
+        view = ServerMuteView(user=member, author=ctx.author, role=muted_role)
+        msg = await ctx.send(view=embed_to_view(embed, view=view))
+        view.message = msg
 
-        embed = discord.Embed(description=f"** Target User:** [{user}](https://discord.com/users/{user.id})\n"
-                                          f" **User Mention:** {user.mention}\n"
-                                          f"**DM Sent:** {dm_status}\n"
-                                          f"** Reason:** {reason or 'None'}\n"
-                                          f"** Duration:** {duration_text}",
-                              color=self.color)
-        embed.set_author(name=f"Successfully Muted {user.name}", icon_url=self.get_user_avatar(user))
-        embed.add_field(name=" Moderator:", value=ctx.author.mention, inline=False)
-        embed.set_footer(text=f"Requested by {ctx.author}", icon_url=self.get_user_avatar(ctx.author))
-        embed.timestamp = discord.utils.utcnow()
-
-        
-        view = TimeoutView(user=user, author=ctx.author)
-        message = await ctx.send(view = embed_to_view(embed, view = view))
-        view.message = message
+        await self._send_mute_log(ctx.guild, member, ctx.author, reason, duration_text)
+        asyncio.create_task(self._auto_unmute_role(ctx.guild.id, member.id, duration_seconds))
 
     @mute.error
     async def mute_error(self, ctx, error):
-        
         if isinstance(error, commands.BotMissingPermissions):
-            embed = discord.Embed(title=f"{emojis.CROSSICON}> Access Denied", description="I don't have permission to mute members.", color=self.color)
-            await ctx.send(view = embed_to_view(embed))
+            # Bot has Administrator? then this is a stale-cache false positive
+            has_admin = ctx.guild and ctx.guild.me and ctx.guild.me.guild_permissions.administrator
+            if has_admin:
+                embed = discord.Embed(title=f"{emojis.CROSSICON} Access Denied", description="The bot is missing `Mute Members` in its current permission cache (it has Administrator). Restart the bot or grant `Mute Members` to the bot role.", color=self.color)
+                embed.set_footer(text="Administrator detected - try again after bot restart")
+                await ctx.send(view=embed_to_view(embed))
+            else:
+                embed = discord.Embed(title=f"{emojis.CROSSICON} Access Denied", description=f"I need `Manage Roles` and `Mute Members` to run `mute`.", color=self.color)
+                await ctx.send(view=embed_to_view(embed))
+        elif isinstance(error, commands.MissingPermissions):
+            embed = discord.Embed(title=f"{emojis.CROSSICON} Missing Permissions", description="You need `Manage Roles` to mute.", color=self.color)
+            await ctx.send(view=embed_to_view(embed))
         elif isinstance(error, discord.Forbidden):
-            embed = discord.Embed(title=f"{emojis.CROSSICON} Missing Permissions", description="I can't mute this user as they might have higher privileges (e.g., Admin).", color=self.color)
-            await ctx.send(view = embed_to_view(embed))
-            
+            embed = discord.Embed(title=f"{emojis.CROSSICON} Missing Permissions", description="I can't mute this user due to role hierarchy.", color=self.color)
+            await ctx.send(view=embed_to_view(embed))
         else:
             embed = discord.Embed(title=f"{emojis.CROSSICON} Unexpected Error", description=str(error), color=self.color)
-            await ctx.send(view = embed_to_view(embed))
-
-"""
-@Author: Sonu Jana
-    + Discord: me.sonu
-    + Community: https://discord.gg/stVsvE9rhT (REM ALL IN ONE BOT)
-    + for any queries reach out Community or DM me.
-"""
+            await ctx.send(view=embed_to_view(embed))

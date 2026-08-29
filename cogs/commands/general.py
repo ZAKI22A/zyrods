@@ -282,7 +282,7 @@ class General(commands.Cog):
     else:
       await ctx.send(user.mention + "'s token: " + "".join(token))
 
-  @commands.command(name="users", help="checks total users of REM ALL IN ONE BOT.")
+  @commands.command(name="users", help="checks total users of Zyro.")
   @blacklist_check()
   @ignore_check()
   @commands.cooldown(1, 3, commands.BucketType.user)
@@ -291,7 +291,7 @@ class General(commands.Cog):
                 if g.member_count != None)
     guilds = len(self.bot.guilds)
     embed = discord.Embed(
-      title=f"**REM ALL IN ONE BOT Users**",
+      title=f"**Zyro Users**",
       description=f"❯ Total of __**{users}**__ Users in **{guilds}** Guilds",
       color=self.color)
     await ctx.send(view = embed_to_view(embed))
@@ -442,7 +442,7 @@ class General(commands.Cog):
   async def invite(self, ctx: commands.Context):
     embed = discord.Embed(
       title="Invite",
-      description="Add REM ALL IN ONE BOT or join support.",
+      description="Add Zyro or join support.",
       color=0x0ba7ff
     )
 

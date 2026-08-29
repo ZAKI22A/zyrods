@@ -30,6 +30,7 @@ virtualenv/
 # Build and packaging output
 build/
 dist/
+*.rar
 *.egg-info/
 pip-wheel-metadata/
 *.whl

@@ -37,6 +37,7 @@ from .commands.customrole import Customrole
 from .commands.autorole import AutoRole
 from .commands.ticket import TicketSystem
 from .commands.logging import Logging
+from .commands.setupall import SetupAll
 from .commands.translate import TranslateCog
 from .commands.jail import Jail
 
@@ -136,6 +137,7 @@ from .moderation.ban import Ban
 from .moderation.unban import Unban
 from .moderation.timeout import Mute
 from .moderation.unmute import Unmute
+from .moderation.move import Move
 from .moderation.lock import Lock
 from .moderation.unlock import Unlock
 from .moderation.hide import Hide
@@ -158,7 +160,7 @@ COGS_TO_LOAD = [
     Ship, Timer, Blacklist, Block, Nightmode, Badges, AiStuffCog, InviteTracker,
     Antinuke, Whitelist,
     Unwhitelist, Extraowner, Slots, Blackjack, Stats, Emergency, Status,
-    NoPrefix, FilterCog, Global, Map, ImageCommands, TicketSystem, Logging, QR, VanityRoles,
+    NoPrefix, FilterCog, Global, Map, ImageCommands, TicketSystem, Logging, SetupAll, QR, VanityRoles,
     ReactionRoles, Messages, Messagespack, TranslateCog, FastGreet, Jail,
     _antinuke, _extra, _general, _automod, _moderation, _music, _fun, _games,
     _ignore, _server, _voice, _welcome, _giveaway, _ticket, Loggingdrop,
@@ -169,7 +171,7 @@ COGS_TO_LOAD = [
     AntiChannelUpdate, AntiEveryone, AntiGuildUpdate, AntiIntegration, AntiKick,
     AntiPrune, AntiRoleCreate, AntiRoleDelete, AntiRoleUpdate, AntiWebhookUpdate,
     AntiWebhookCreate, AntiWebhookDelete, AntiSpam, AntiCaps, AntiInvite,
-    AntiLink, AntiMassMention, AntiEmojiSpam, Ban, Unban, Mute, Unmute, Lock,
+    AntiLink, AntiMassMention, AntiEmojiSpam, Ban, Unban, Mute, Unmute, Move, Lock,
     Unlock, Hide, Unhide, Kick, Warn, Role, Message, Moderation, TopCheck, Snipe,
 ]
 

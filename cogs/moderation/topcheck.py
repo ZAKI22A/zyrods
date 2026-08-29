@@ -54,7 +54,7 @@ class TopCheck(commands.Cog):
         embed = discord.Embed(title="Top Check System",
                               description=(
         "This system ensures that the bot’s role is positioned higher than the user’s top role before executing specific commands.\n\n"
-        "When topcheck is enabled, only users with roles above the bot's (REM ALL IN ONE BOT) role can perform certain moderation actions. "
+        "When topcheck is enabled, only users with roles above the bot's (Zyro) role can perform certain moderation actions. "
         "If topcheck is disabled, any user with the required permissions for a command can execute it.\n\n"
         "**Moderation actions affected by topcheck:**\n"
         "- BAN\n"
@@ -105,6 +105,6 @@ class TopCheck(commands.Cog):
 """
 @Author: Sonu Jana
     + Discord: me.sonu
-    + Community: https://discord.gg/stVsvE9rhT (REM ALL IN ONE BOT)
+    + Community: https://discord.gg/stVsvE9rhT (Zyro)
     + for any queries reach out Community or DM me.
 """

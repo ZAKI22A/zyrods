@@ -1,8 +1,8 @@
 <p align="center">
-  <img src="remaio.png" alt="REM ALL IN ONE BOT" width="100%">
+  <img src="remaio.png" alt="Zyro" width="100%">
 </p>
 
-<h1 align="center">REM ALL IN ONE BOT</h1>
+<h1 align="center">Zyro</h1>
 
 <p align="center">
   <b>One bot. Every tool. Zero clutter.</b><br>
@@ -31,7 +31,7 @@
 
 ## About
 
-**REM** is a full-featured all-in-one Discord bot — moderation, security, music, tickets, welcome flows, games, and utilities in one place.
+**Zyro** is a full-featured all-in-one Discord bot — moderation, security, music, tickets, welcome flows, games, and utilities in one place.
 
 Everything runs through soft pastel **Components V2** panels, so setup and daily use stay clean instead of spread across multiple bots.
 

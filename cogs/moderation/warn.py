@@ -119,25 +119,39 @@ class Warn(commands.Cog):
 
             
             reason_to_send = reason or "No reason provided"
-            try:
-                await user.send(f"You have been warned in **{ctx.guild.name}** by **{ctx.author}**. Reason: {reason_to_send}")
-                dm_status = "Yes"
-            except discord.Forbidden:
-                dm_status = "No"
-            except discord.HTTPException:
-                dm_status = "No"
+            from utils.admin_dm import send_admin_dm
+            from utils import emojis as _emo
+            dm_ok = await send_admin_dm(
+                user,
+                title="Warning",
+                emoji=str(_emo.WARNING),
+                description=f"You have been **warned** in **{ctx.guild.name}**.",
+                color=0xFEE75C,
+                fields=[
+                    ("Server", ctx.guild.name, True),
+                    ("Warnings", f"`{total_warns}`", True),
+                    ("Reason", f"`{reason_to_send}`", False),
+                ],
+            )
+            dm_status = "Yes" if dm_ok else "No"
 
             
-            embed = discord.Embed(description=f"**Target User:** [{user}](https://discord.com/users/{user.id})\n"
-                                              f"** User Mention:** {user.mention}\n"
-                                              f"**DM Sent:** {dm_status}\n"
-                                              f"** Reason:** {reason_to_send}\n"
-                                              f"** Total Warns:** {total_warns}",
-                                              color=self.color)
-            embed.set_author(name=f"Successfully Warned {user.name}", icon_url=self.get_user_avatar(user))
-            embed.add_field(name="Moderator:", value=ctx.author.mention, inline=False)
-            embed.set_footer(text=f"Requested by {ctx.author}", icon_url=self.get_user_avatar(ctx.author))
-            embed.timestamp = discord.utils.utcnow()
+            from cogs.commands.logging import build_pro_embed
+            _banner = ctx.guild.banner.url if ctx.guild.banner else None
+            embed = build_pro_embed(
+                guild=ctx.guild, user=user,
+                title="Successfully Warned", emoji=str(emojis.WARNING),
+                description=f"{user.mention} was warned in **{ctx.guild.name}**.",
+                color=0xFEE75C,
+                fields=[
+                    ("Target", f"{user.mention} `({user.id})`", True),
+                    ("Warnings", f"`{total_warns}`", True),
+                    ("DM Sent", f"`{dm_status}`", True),
+                    ("Reason", f"`{reason_to_send}`", False),
+                ],
+                banner_url=_banner,
+                thumbnail_url=user.display_avatar.url if user.display_avatar else None,
+            )
 
             view = WarnView(user=user, author=ctx.author)
             message = await ctx.send(view = embed_to_view(embed, view = view))
@@ -175,6 +189,6 @@ class Warn(commands.Cog):
 """
 @Author: Sonu Jana
     + Discord: me.sonu
-    + Community: https://discord.gg/stVsvE9rhT (REM ALL IN ONE BOT)
+    + Community: https://discord.gg/stVsvE9rhT (Zyro)
     + for any queries reach out Community or DM me.
 """

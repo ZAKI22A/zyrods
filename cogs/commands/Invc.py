@@ -102,9 +102,9 @@ class Invcrole(commands.Cog):
                     role = member.guild.get_role(row[0])
 
                     if after.channel and role not in member.roles:
-                        await self.add_role_with_retry(member, role, reason="Member Joined VC | REM ALL IN ONE BOT Invcrole")
+                        await self.add_role_with_retry(member, role, reason="Member Joined VC | Zyro Invcrole")
                     elif not after.channel and role in member.roles:
-                        await self.remove_role_with_retry(member, role, reason="Member Left VC | REM ALL IN ONE BOT Invcrole")
+                        await self.remove_role_with_retry(member, role, reason="Member Left VC | Zyro Invcrole")
         except discord.Forbidden:
             print(f"Bot lacks permissions to maange role in a guild during Invc Event .")
         except Exception as e:
@@ -142,6 +142,6 @@ class Invcrole(commands.Cog):
 """
 @Author: Sonu Jana
     + Discord: me.sonu
-    + Community: https://discord.gg/stVsvE9rhT (REM ALL IN ONE BOT)
+    + Community: https://discord.gg/stVsvE9rhT (Zyro)
     + for any queries reach out Community or DM me.
 """

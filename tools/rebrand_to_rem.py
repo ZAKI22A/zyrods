@@ -28,10 +28,10 @@ REPLACEMENTS = [
     ("class axon(", "class Rem("),
 
     ("_axon_neutral_policy", "_rem_neutral_policy"),
-    ("Axon X", "REM"),
-    ("Olympus", "REM"),
+    ("Axon X", "Zyro"),
+    ("Olympus", "Zyro"),
     ("olympus", "rem"),
-    ("modified version of REM. Original project lineage includes REM and REM bot components", "REM ALL IN ONE BOT"),
+    ("modified version of REM. Original project lineage includes REM and REM bot components", "Zyro"),
 ]
 
 

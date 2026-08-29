@@ -30,7 +30,7 @@ class MapView(ui.View):
     def get_coordinates(self, location):
         
         try:
-            headers = {'User-Agent': 'REM ALL IN ONE BOT'}
+            headers = {'User-Agent': 'Zyro'}
             response = requests.get(f'https://nominatim.openstreetmap.org/search?q={location}&format=json', headers=headers)
             response.raise_for_status()
             data = response.json()[0]
@@ -60,7 +60,7 @@ class MapView(ui.View):
         embed.add_field(name="📏  Map Size", value=f"➜  {self.map_size}")
         embed.add_field(name="📍 Current Coordinates", value=f"➜  {self.latitude}, {self.longitude}")
         embed.set_image(url=self.map_url)
-        embed.set_footer(text="Made by REM ALL IN ONE BOT")
+        embed.set_footer(text="Made by Zyro")
         try:
             await interaction.message.edit(view = embed_to_view(embed, view = self))
         except Exception as e:
@@ -245,6 +245,6 @@ class Map(commands.Cog):
     """
     @Author: Sonu Jana
         + Discord: me.sonu
-        + Community: https://discord.gg/stVsvE9rhT (REM ALL IN ONE BOT)
+        + Community: https://discord.gg/stVsvE9rhT (Zyro)
         + for any queries reach out Community or DM me.
     """

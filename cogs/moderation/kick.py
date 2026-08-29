@@ -72,7 +72,21 @@ class Kick(commands.Cog):
         
         dm_status = "Yes"
         try:
-            await member.send(f"You have been kicked from **{ctx.guild.name}**. Reason: {reason}")
+            from utils.admin_dm import send_admin_dm
+            from utils import emojis as _emo
+            _dm_ok = await send_admin_dm(
+                member,
+                title="Server Kick",
+                emoji=str(_emo.EMOJI_7CLUB_BAN),
+                description=f"You have been **kicked** from **{ctx.guild.name}**.",
+                color=0xED4245,
+                fields=[
+                    ("Server", ctx.guild.name, True),
+                    ("Reason", f"`{reason}`", False),
+                ],
+            )
+            if not _dm_ok:
+                dm_status = "No"
         except discord.Forbidden:
             dm_status = "No"
         except discord.HTTPException:
@@ -80,22 +94,22 @@ class Kick(commands.Cog):
 
         
         await member.kick(reason=f"Kicked by {ctx.author} | Reason: {reason}")
-        
 
-        
-        embed = discord.Embed(
-            description=(
-                f"**{emojis.USER} Target User:** [{member}](https://discord.com/users/{member.id})\n"
-                f"{emojis.MENTION} **User Mention:** {member.mention}\n"
-                f"{emojis.COMMANDS} **Reason:** {reason}\n"
-                f"{emojis.TICK}**DM Sent:** {dm_status}"
-            ),
-            color=self.color
+        from cogs.commands.logging import build_pro_embed
+        _banner = ctx.guild.banner.url if ctx.guild.banner else None
+        embed = build_pro_embed(
+            guild=ctx.guild, user=member,
+            title="Successfully Kicked", emoji=str(emojis.EMOJI_7CLUB_BAN),
+            description=f"{member.mention} was kicked from **{ctx.guild.name}**.",
+            color=0xED4245,
+            fields=[
+                ("Target", f"{member.mention} `({member.id})`", True),
+                ("Reason", f"`{reason}`", False),
+                ("DM Sent", f"`{dm_status}`", True),
+            ],
+            banner_url=_banner,
+            thumbnail_url=member.display_avatar.url if member.display_avatar else None,
         )
-        embed.set_author(name=f"Successfully Kicked {member.name}", icon_url=member.avatar.url if member.avatar else member.default_avatar.url)
-        embed.add_field(name=f"{emojis.U_ADMIN} Moderator:", value=ctx.author.mention, inline=False)
-        embed.set_footer(text=f"Requested by {ctx.author}", icon_url=ctx.author.avatar.url if ctx.author.avatar else ctx.author.default_avatar.url)
-        embed.timestamp = discord.utils.utcnow()
 
         view = KickView(member)
         message = await ctx.send(view = embed_to_view(embed, view = view))
@@ -105,6 +119,6 @@ class Kick(commands.Cog):
 """
 @Author: Sonu Jana
     + Discord: me.sonu
-    + Community: https://discord.gg/stVsvE9rhT (REM ALL IN ONE BOT)
+    + Community: https://discord.gg/stVsvE9rhT (Zyro)
     + for any queries reach out Community or DM me.
 """

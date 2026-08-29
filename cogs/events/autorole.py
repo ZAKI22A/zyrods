@@ -41,7 +41,7 @@ class Autorole2(Cog):
             role = member.guild.get_role(role_id)
             if role:
                 try:
-                    await member.add_roles(role, reason="REM ALL IN ONE BOT Autoroles")
+                    await member.add_roles(role, reason="Zyro Autoroles")
                 except discord.Forbidden:
                     logger.warning("Bot lacks permissions to add autorole in guild %s", member.guild.id)
                 except discord.HTTPException as exc:
@@ -49,11 +49,11 @@ class Autorole2(Cog):
                         retry_after = exc.response.headers.get('Retry-After') if exc.response else None
                         if retry_after:
                             await asyncio.sleep(float(retry_after))
-                            await member.add_roles(role, reason="REM ALL IN ONE BOT  Autoroles")
+                            await member.add_roles(role, reason="Zyro  Autoroles")
                 except discord.errors.RateLimited as exc:
                     logger.warning("Autorole rate limited in guild %s; retrying in %ss", member.guild.id, exc.retry_after)
                     await asyncio.sleep(exc.retry_after)
-                    await member.add_roles(role, reason="REM ALL IN ONE BOT  Autoroles")
+                    await member.add_roles(role, reason="Zyro  Autoroles")
                 except Exception as e:
                     logger.error(f"Unexpected error in Autorole: {e}")
 

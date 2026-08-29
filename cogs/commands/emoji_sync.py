@@ -520,7 +520,7 @@ class EmojiSync(commands.Cog):
                 created = await guild.create_custom_emoji(
                     name=asset.name,
                     image=asset.data,
-                    reason="REM emoji sync",
+                    reason="Zyro emoji sync",
                 )
                 existing_names.add(created.name.lower())
                 result.uploaded.append(created.name)

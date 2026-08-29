@@ -231,12 +231,12 @@ class Automod(commands.Cog):
 
         cancel_button.callback = cancel_callback
 
-        view = discord.ui.View()
+        view = discord.ui.View(timeout=120)
         view.add_item(select_menu)
         view.add_item(enable_all_button)
         view.add_item(cancel_button)
 
-        await ctx.send(view = embed_to_view(embed, view = view))
+        await ctx.send(embed=embed, view=view)
         
 
     async def enable_automod(self, ctx, guild_id, selected_events, interaction):
@@ -361,30 +361,37 @@ class Automod(commands.Cog):
             view = ShowRules(ctx.author, selected_events)
             view.add_item(enable_logging_button)
 
-            await interaction.response.edit_message(view=embed_to_view(embed, view=view))
-        except discord.HTTPException:
-            if not interaction.response.is_done():
-                await interaction.response.send_message(
-                    "Failed to finish automod setup. Please try again.",
-                    ephemeral=True,
-                )
-            else:
-                await interaction.followup.send(
-                    "Failed to finish automod setup. Please try again.",
-                    ephemeral=True,
-                )
-        except Exception:
-            if not interaction.response.is_done():
-                await interaction.response.send_message(
-                    "Something went wrong while enabling automod. Please try again.",
-                    ephemeral=True,
-                )
-            else:
-                await interaction.followup.send(
-                    "Something went wrong while enabling automod. Please try again.",
-                    ephemeral=True,
-                )
-            raise
+            try:
+                await interaction.response.edit_message(embed=embed, view=view)
+            except Exception:
+                await interaction.followup.send(embed=embed, view=view, ephemeral=True)
+        except discord.HTTPException as e:
+            import traceback
+            traceback.print_exc()
+            try:
+                msg = f"Failed to finish automod setup: `{e}`"
+                if not interaction.response.is_done():
+                    await interaction.response.send_message(msg, ephemeral=True)
+                else:
+                    await interaction.followup.send(msg, ephemeral=True)
+            except Exception:
+                pass
+        except Exception as e:
+            import traceback
+            traceback.print_exc()
+            try:
+                if not interaction.response.is_done():
+                    await interaction.response.send_message(
+                        f"Error enabling automod: `{e}` - check console.",
+                        ephemeral=True,
+                    )
+                else:
+                    await interaction.followup.send(
+                        f"Error enabling automod: `{e}` - check console.",
+                        ephemeral=True,
+                    )
+            except Exception:
+                pass
 
 
     
@@ -1031,6 +1038,6 @@ class Automod(commands.Cog):
 """
 @Author: Sonu Jana
     + Discord: me.sonu
-    + Community: https://discord.gg/stVsvE9rhT (REM ALL IN ONE BOT)
+    + Community: https://discord.gg/stVsvE9rhT (Zyro)
     + for any queries reach out Community or DM me.
 """

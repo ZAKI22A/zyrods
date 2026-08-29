@@ -74,8 +74,20 @@ class ReasonModal(ui.Modal):
     async def on_submit(self, interaction: discord.Interaction):
         reason = self.reason_input.value or "No reason provided"
         try:
-            await self.user.send(f"{emojis.TICK} You have been Unbanned from **{self.author.guild.name}** by **{self.author}**. Reason: {reason or 'No reason provided'}")
-            dm_status = "Yes"
+            from utils.admin_dm import send_admin_dm
+            from utils import emojis as _emo
+            dm_ok = await send_admin_dm(
+                self.user,
+                title="Server Unban",
+                emoji=str(_emo.TICK),
+                description=f"You have been **unbanned** from **{self.author.guild.name}**.",
+                color=0x57F287,
+                fields=[
+                    ("Server", self.author.guild.name, True),
+                    ("Reason", f"`{reason}`", False),
+                ],
+            )
+            dm_status = "Yes" if dm_ok else "No"
         except discord.Forbidden:
             dm_status = "No"
         except discord.HTTPException:
@@ -174,8 +186,21 @@ class Ban(commands.Cog):
                     return await ctx.send(view = embed_to_view(error))
 
         try:
-            await user.send(f"{emojis.ICONS_WARNING} You have been banned from **{ctx.guild.name}** by **{ctx.author}**. Reason: {reason or 'No reason provided'}")
-            dm_status = "Yes"
+            from utils.admin_dm import send_admin_dm
+            from utils import emojis as _emo
+            _reason = reason or 'No reason provided'
+            dm_ok = await send_admin_dm(
+                user,
+                title="Server Ban",
+                emoji=str(_emo.EMOJI_7CLUB_BAN),
+                description=f"You have been **banned** from **{ctx.guild.name}**.",
+                color=0xED4245,
+                fields=[
+                    ("Server", ctx.guild.name, True),
+                    ("Reason", f"`{_reason}`", False),
+                ],
+            )
+            dm_status = "Yes" if dm_ok else "No"
         except discord.Forbidden:
             dm_status = "No"
         except discord.HTTPException:
@@ -184,11 +209,21 @@ class Ban(commands.Cog):
         await ctx.guild.ban(user, reason=f"Ban requested by {ctx.author} for reason: {reason or 'No reason provided'}")
 
         reasonn = reason or "No reason provided"
-        embed = discord.Embed(description=f"**{emojis.USER} Target User:** [{user}](https://discord.com/users/{user.id})\n**{emojis.MENTION} User Mention:** {user.mention}\n**{emojis.TICK} DM Sent:** {dm_status}\n**{emojis.COMMANDS} Reason:** {reasonn}", color=self.color)
-        embed.set_author(name=f"Successfully Banned {user.name}", icon_url=self.get_user_avatar(user))
-        embed.add_field(name=f"{emojis.U_ADMIN} Moderator:", value=ctx.author.mention, inline=False)
-        embed.set_footer(text=f"Requested by {ctx.author}", icon_url=self.get_user_avatar(ctx.author))
-        embed.timestamp = discord.utils.utcnow()
+        from cogs.commands.logging import build_pro_embed
+        _banner = ctx.guild.banner.url if ctx.guild.banner else None
+        embed = build_pro_embed(
+            guild=ctx.guild, user=user,
+            title="Successfully Banned", emoji=str(emojis.EMOJI_7CLUB_BAN),
+            description=f"{user.mention} was banned from **{ctx.guild.name}**.",
+            color=0xED4245,
+            fields=[
+                ("Target", f"{user.mention} `({user.id})`", True),
+                ("DM Sent", f"`{dm_status}`", True),
+                ("Reason", f"`{reasonn}`", False),
+            ],
+            banner_url=_banner,
+            thumbnail_url=user.display_avatar.url if user.display_avatar else None,
+        )
 
         view = BanView(user=user, author=ctx.author)
         message = await ctx.send(view = embed_to_view(embed, view = view))
@@ -199,6 +234,6 @@ class Ban(commands.Cog):
 """
 @Author: Sonu Jana
     + Discord: me.sonu
-    + Community: https://discord.gg/stVsvE9rhT (REM ALL IN ONE BOT)
+    + Community: https://discord.gg/stVsvE9rhT (Zyro)
     + for any queries reach out Community or DM me.
 """

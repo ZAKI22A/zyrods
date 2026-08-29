@@ -35,7 +35,7 @@ class Customrole(commands.Cog):
     async def add_role(self, *, role_id: int, member: discord.Member):
         if member.guild.me.guild_permissions.manage_roles:
             role = discord.Object(id=role_id)
-            await member.add_roles(role, reason="REM ALL IN ONE BOT Customrole | Role Added")
+            await member.add_roles(role, reason="Zyro Customrole | Role Added")
         else:
             raise discord.Forbidden("Bot does not have permission to manage roles.")
 
@@ -44,7 +44,7 @@ class Customrole(commands.Cog):
     async def remove_role(self, *, role_id: int, member: discord.Member):
         if member.guild.me.guild_permissions.manage_roles:
             role = discord.Object(id=role_id)
-            await member.remove_roles(role, reason="REM ALL IN ONE BOT Customrole | Role Removed")
+            await member.remove_roles(role, reason="Zyro Customrole | Role Removed")
         else:
             raise discord.Forbidden("Bot does not have permission to manage roles.")
             
@@ -53,12 +53,12 @@ class Customrole(commands.Cog):
     async def add_role2(self, *, role: int, member: discord.Member):
         if member.guild.me.guild_permissions.manage_roles:
             role = discord.Object(id=int(role))
-            await member.add_roles(role, reason="REM ALL IN ONE BOT Customrole | Role Added ")
+            await member.add_roles(role, reason="Zyro Customrole | Role Added ")
 
     async def remove_role2(self, *, role: int, member: discord.Member):
         if member.guild.me.guild_permissions.manage_roles:
             role = discord.Object(id=int(role))
-            await member.remove_roles(role, reason="REM ALL IN ONE BOT Customrole| Role Removed")
+            await member.remove_roles(role, reason="Zyro Customrole| Role Removed")
 
     
 
@@ -642,6 +642,6 @@ class Customrole(commands.Cog):
 """
 @Author: Sonu Jana
     + Discord: me.sonu
-    + Community: https://discord.gg/stVsvE9rhT (REM ALL IN ONE BOT)
+    + Community: https://discord.gg/stVsvE9rhT (Zyro)
     + for any queries reach out support or DM me.
 """
